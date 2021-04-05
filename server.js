@@ -1,29 +1,51 @@
 'use strict';
 
-// requireing express
-const express = require('express');
-//requiering dotenv config
+//Dotenv (Read our inviroment variable)
 require('dotenv').config();
-//requiering cors
+
+// Application dependencies /express & cors
+const express = require('express');
+//Origin resource sharing
 const cors = require('cors');
+//request library
+const superagent = require('superagent');
 
-//asssigning server with express
-const server = express();
-//init the port from env file or the port 3000
+//Application setup
 const PORT = process.env.PORT || 3000;
-
+const server = express();
 server.use(cors());
 
-server.get('/', (req, res) => {
-  res.send('server is alive');
-});
-server.get('/location', (req, res) => {
-  let locationData = require('./data/location.json');
+/////////////////////////
+///// The routes ///////
+///////////////////////
+
+server.get('/', routeHandeler);
+server.get('/location',locationHandeler);
+server.get('/weather',weatherHandeler);
+server.get('*',notFoundHandeler);
+
+///////////////////////////////
+//// Handeling Functions  ////
+/////////////////////////////
+
+function routeHandeler(req,res){
+  res.send('The server is working , Great job !');
+};
+////http://localhost:3000/location?city=Lynwood
+function locationHandeler (req, res) {
+//get the data from Api server (locationIQ)
+//send a request using superagent library (request URL && the key)
+let cityName = req.query.city;
+let  locationKey = 'pk.9655e2b3c22302ad4cf8df3a11cb2d40';
+let locationURL = `https://eu1.locationiq.com/v1/search.php?key=${locationKey}&q=${cityName}&format=json`;
+
+  //let locationData = require('./data/location.json');
   //   console.log('server.get   locationData', locationData);
   let cityData = new Place(locationData);
   res.send(cityData);
-});
-server.get('/weather', (req, res) => {
+};
+//http:localhost:3000/weather
+function weatherHandeler (req, res) {
   let getWeatherData = require('./data/weather.json');
 
   getWeatherData.data.forEach((item, index) => {
@@ -32,14 +54,19 @@ server.get('/weather', (req, res) => {
     let cityWeather = new Weather(description, vDate);
   });
   res.send(Weather.all);
-});
-server.get('*', (req, res) => {
+};
+//for not found
+function notFoundHandeler (req, res){
   let errObject = {
     status: 500,
     responseText: 'Sorry, something went wrong',
   };
   res.status(500).send(errObject);
-});
+};
+
+/////////////////////
+////constructors////
+///////////////////
 
 const Place = function (locationData) {
   this.search_query = 'Lynwood';
