@@ -17,44 +17,44 @@ const superagent = require('superagent');
 ///////////////////////
 
 server.get('/', routeHandler);
-server.get('/location',locationHandler);
-server.get('/weather',weatherHandler);
+server.get('/location', locationHandler);
+server.get('/weather', weatherHandler);
 server.get('/parks', parksRouteHandler);
-server.get('*',notFoundHandler);
+server.get('*', notFoundHandler);
 
 ///////////////////////////////
 //// Handeling Functions  ////
 /////////////////////////////
 
-function routeHandler(req,res){
+function routeHandler(req, res) {
   res.send('The server is working , Great job !');
 };
 
-function locationHandler (req, res) {
-let cityQuery= req.query.city;
-let key = process.env.LOCATION_KEY;
-let locationURL = `https://eu1.locationiq.com/v1/search.php?key=${key}&q=${cityQuery}&format=json`;
+function locationHandler(req, res) {
+  let cityQuery = req.query.city;
+  let key = process.env.LOCATION_KEY;
+  let locationURL = `https://eu1.locationiq.com/v1/search.php?key=${key}&q=${cityQuery}&format=json`;
 
 
-superagent.get(locationURL).then(geoData => {
-  let gData = geoData.body;
- let locationInstance = new Place(cityQuery, gData);
-  res.send(locationInstance);
-});
+  superagent.get(locationURL).then(geoData => {
+    let gData = geoData.body;
+    let locationInstance = new Place(cityQuery, gData);
+    res.send(locationInstance);
+  });
 
 }
 
-function weatherHandler (req, res) {
+function weatherHandler(req, res) {
   let cityQuery = req.query.search_query;
   let key = process.env.WEATHER_KEY;
   let weatherURL = `https://api.weatherbit.io/v2.0/forecast/daily?city=${cityQuery}&key=${key}`;
   superagent.get(weatherUrl).then(weatherData => {
     let wData = weatherData.body;
-    let items = wData.data.map((item, index) =>{
-     let description = item.weather.description;
-     let validDate = item.valid_date;
-     return new Weather(description , validDate);
-    } );
+    let items = wData.data.map((item, index) => {
+      let description = item.weather.description;
+      let validDate = item.valid_date;
+      return new Weather(description, validDate);
+    });
     res.send(items);
   });
 };
@@ -73,14 +73,10 @@ function parksRouteHandler(req, res) {
   });
 }
 
-// for not found
-// function notFoundHandler (req, res){
-//   res.status(404).send('Sorry some thing went wrong');
-// };
-function notFoundHandler(req,res){
+function notFoundHandler(req, res) {
   let errorObject = {
-      status: 500,
-      resText : 'Error 500 , Not Found'
+    status: 500,
+    resText: 'Error 500 , Not Found'
   };
   res.status(500).send(errorObject);
 }
@@ -89,7 +85,7 @@ function notFoundHandler(req,res){
 ////constructors////
 ///////////////////
 
-const Place = function (cityName,geoData) {
+const Place = function (cityName, geoData) {
   this.search_query = cityName;
   this.formatted_query = geoData[0].display_name;
   this.latitude = geoData[0].lat;
