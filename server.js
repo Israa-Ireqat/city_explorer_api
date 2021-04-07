@@ -98,7 +98,7 @@ function Location (cityName,geoData) {
     this.url = parkData.url;
   }
 
-  function errorHandler(req, res) {
+  function errorHandeler(req, res) {
     let errObj = {
       status: 500,
       responseText: "Sorry, something went wrong"
