@@ -7,7 +7,7 @@ const server = express();
 const superagent = require('superagent');
 const PORT = process.env.PORT || 3000;
 const client = new pg.Client({ connectionString: process.env.DATABASE_URL 
-    //ssl: { rejectUnauthorized: false } 
+    ,ssl: { rejectUnauthorized: false } 
 });
 
 server.use(cors());
@@ -116,3 +116,5 @@ function Location (cityName,geoData) {
         console.log(`Listening on PORT ${PORT}`);
       });
     });
+    //yelps:  https://api.yelp.com/v3/businesses/search
+    // let movieURL = `https://api.themoviedb.org/3/search/movie?api_key=${key}&query=${movieName}`;
