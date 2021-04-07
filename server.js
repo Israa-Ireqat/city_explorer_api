@@ -12,12 +12,17 @@ const client = new pg.Client({ connectionString: process.env.DATABASE_URL
 
 server.use(cors());
 server.get('/', routeHandeler);
-server.get('/', locationHandeler);
-server.get('/', weatherHandeler);
-server.get('/', parkHandeler);
-server.get('/', errorHandeler);
+server.get('/location', locationHandeler);
+server.get('/weather', weatherHandeler);
+server.get('/parks', parkHandeler);
+server.get('*', errorHandeler);
 
 //Handelers:
+
+function routeHandeler(request, response) {
+  response.status(200).send('you server is alive!!');
+}
+
 function locationHandeler(req, res) {
     let cityName = req.query.city;
     let key = process.env.LOCATION_KEY;
@@ -55,8 +60,8 @@ function weatherHandeler(req,res){
     let weatherURL = `https://api.weatherbit.io/v2.0/forecast/daily?city=${cityName}&key=${key}&days=8`;
     superagent.get(weatherURL)
     .then(day =>{
-        day.body.date.map(value =>{
-            weahterArray.push(new weather(value));
+        day.body.data.map(value =>{
+            weahterArray.push(new Weather(value));
         });
         res.send(weahterArray);
     });
@@ -65,12 +70,12 @@ function weatherHandeler(req,res){
 function parkHandeler(req,res){
     let parkArray = [];
     let parkName = req.query.search_query;
-    let key = process.env.PARK_KEY;
+    let key = process.env.PARKS_KEY;
     let parkURL = `https://developer.nps.gov/api/v1/parks?q=${parkName}&api_key=${key}`;
     superagent.get(parkURL)
     .then(parkData =>{
         parkData.body.data.forEach(value =>{
-            parkArray.push(new park (value));
+            parkArray.push(new Park (value));
         });
         res.send(parkArray);
     });
