@@ -15,6 +15,8 @@ server.get('/', routeHandeler);
 server.get('/location', locationHandeler);
 server.get('/weather', weatherHandeler);
 server.get('/parks', parkHandeler);
+server.get('/movie', movieHandeler);
+server.get('/yelp', yelpHandeler);
 server.get('*', errorHandeler);
 
 //Handelers:
@@ -81,6 +83,46 @@ function parkHandeler(req,res){
     });
 }
 
+function movieHandeler(req, res) {
+  let data3 = [];
+  let movieName = req.query.search_query;
+  console.log(movieName);
+  let key = process.env.MOVIES_KEY;
+  // let movieURL = `https://api.themoviedb.org/3/search/movie?api_key=${key}&query=${movieName}`;
+  let movieURL=`https://api.themoviedb.org/3/search/movie?api_key=${key}&query=${movieName}`;
+  superagent.get(movieURL)
+    .then(result => {
+      result.body.results.map(val => {
+        data3.push(new Movie (val));
+      });
+      res.send(data3);
+    });
+}
+
+
+function yelpHandeler(req, res) {
+  // console.log(req.query);
+  let data4 = [];
+
+  let yelpName = req.query.search_query;
+  let key = process.env.YELP_KEY;
+let page =req.query.page;
+  let numPerPage=5;
+  let start=((page-1)* numPerPage +1);
+  console.log(yelpName);
+  // `https://api.yelp.com/v3/businesses/search`
+  let yelpURL=`https://api.yelp.com/v3/businesses/search?location=${yelpName}&limit=${numPerPage}&offest=${start}`;
+  superagent.get(yelpURL).set('authorization',`Bearer ${key}`)
+    .then(result => {
+      // console.log(result.body.data.yelp);
+      result.body.businesses.map(val => {
+        data4.push(new Yelp (val));
+      });
+      res.send(data4);
+    });
+}
+
+
 ////constructors:
 function Location (cityName,geoData) {
     this.search_query = cityName;
@@ -103,6 +145,25 @@ function Location (cityName,geoData) {
     this.url = parkData.url;
   }
 
+  function Movie(movieData) {
+    this.title = movieData.title;
+    this.overview = movieData.overview;
+    this.average_votes = movieData.vote_average;
+    this.total_votes = movieData.vote_count;
+    this.image_url =`https://image.tmdb.org/t/p/w500/${movieData.poster_path}`;
+    this.popularity = movieData.popularity;
+    this.released_on = movieData.release_date;
+  }
+
+  function Yelp(yelpData) {
+    this.name = yelpData.name;
+    this.image_url = yelpData.image_url;
+    this.price= yelpData.price;
+    this.rating = yelpData.rating;
+    this.url = yelpData.url;
+    
+  }
+
   function errorHandeler(req, res) {
     let errObj = {
       status: 500,
@@ -118,3 +179,5 @@ function Location (cityName,geoData) {
     });
     //yelps:  https://api.yelp.com/v3/businesses/search
     // let movieURL = `https://api.themoviedb.org/3/search/movie?api_key=${key}&query=${movieName}`;
+
+    
